@@ -23,7 +23,7 @@ def load_llama3_tokenizer():
     """
     https://github.com/huggingface/transformers/issues/22794#issuecomment-2092623992
     """
-    tokenizer_name = "meta-llama/Llama-3.2-1B"
+    tokenizer_name = "longtc/llama3.2-1B"
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
     bos = tokenizer.bos_token
     eos = tokenizer.eos_token
@@ -38,8 +38,8 @@ def load_llama3_tokenizer():
 
 class Generator:
     def __init__(
-        self,
-        model: Model,
+            self,
+            model: Model,
     ):
         self._model = model
         self._model.setup_caches(1)
@@ -105,13 +105,14 @@ class Generator:
 
     @torch.inference_mode()
     def generate(
-        self,
-        text: str,
-        speaker: int,
-        context: List[Segment],
-        max_audio_length_ms: float = 90_000,
-        temperature: float = 0.9,
-        topk: int = 50,
+            self,
+            text: str,
+            speaker: int,
+            context: List[Segment],
+            max_audio_length_ms: float = 90_000,
+            temperature: float = 0.9,
+            topk: int = 50,
+            max_seq_len: int = 2048,
     ) -> torch.Tensor:
         self._model.reset_caches()
 
@@ -134,7 +135,7 @@ class Generator:
         curr_tokens_mask = prompt_tokens_mask.unsqueeze(0)
         curr_pos = torch.arange(0, prompt_tokens.size(0)).unsqueeze(0).long().to(self.device)
 
-        max_seq_len = 2048 - max_audio_frames
+        max_seq_len = max_seq_len - max_audio_frames
         if curr_tokens.size(1) >= max_seq_len:
             raise ValueError(f"Inputs too long, must be below max_seq_len - max_audio_frames: {max_seq_len}")
 
